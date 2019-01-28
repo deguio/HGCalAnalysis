@@ -43,8 +43,12 @@ print("maxEvents: ", options.maxEvents)
 #
 # MINIAODSIM
 if options.isMINIAOD: 
-    options.inputFiles = '/store/relval/CMSSW_10_3_0_pre4/RelValTTbar_13/MINIAODSIM/PUpmx25ns_103X_upgrade2018_realistic_v4-v1/20000/17E57223-3406-7340-B867-2DDC36E7C371.root'
-    options.outputFile = 'relval_ttbar_2018_pmx25ns_miniaodsim.root'
+    #options.inputFiles = '/store/relval/CMSSW_10_3_0_pre4/RelValTTbar_13/MINIAODSIM/PUpmx25ns_103X_upgrade2018_realistic_v4-v1/20000/17E57223-3406-7340-B867-2DDC36E7C371.root'
+    #options.outputFile = 'relval_ttbar_2018_pmx25ns_miniaodsim.root'
+    #options.inputFiles = '/store/user/bcaraway/crab_outputs/TTbar_14TeV/CMSSW_10_4_0_pre2_D30_Step3_v3/181207_200604/0000/step3_inMINIAODSIM_9.root'
+    #options.outputFile = 'relval_ttbar_2023_D30_miniaodsim.root'
+    options.inputFiles = '/store/relval/CMSSW_10_4_0_mtd4/RelValNuGun/MINIAODSIM/PU25ns_103X_upgrade2023_realistic_v2_2023D35PU200-v1/20000/892E4505-33D5-CB42-9409-2410B4C3FF3B.root'
+    options.outputFile = 'relval_nugun_pu25ns_2023_D35_miniaodsim.root'
 # GEN-SIM-RECO
 else:
     options.inputFiles = 'file:/home/bcaraway/HGcal/CMSSW_10_4_X_2018-10-26-2300/src/HGCalAnalysis/HGCalTreeMaker/test/matrixTestSubmit/step3.root'
@@ -80,19 +84,21 @@ process.options = cms.untracked.PSet(
 # import of standard configurations
 #------------------------------------------------------------------------------------
 # import of standard configurations
-process.load('Configuration.StandardSequences.Services_cff')
-process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+#process.load('Configuration.StandardSequences.Services_cff')
+#process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 #process.load('Configuration.Geometry.GeometryExtended2023D17Reco_cff')  # <=== to be checked
-process.load('Configuration.Geometry.GeometryExtended2023D28Reco_cff')
+#process.load('Configuration.Geometry.GeometryExtended2023D28Reco_cff')
+#process.load('Configuration.Geometry.GeometryExtended2023D30Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D35Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
-process.load('PhysicsTools.PatAlgos.slimming.metFilterPaths_cff')
-process.load('Configuration.StandardSequences.PATMC_cff')
+#process.load('PhysicsTools.PatAlgos.slimming.metFilterPaths_cff')
+#process.load('Configuration.StandardSequences.PATMC_cff')
 process.load('Configuration.StandardSequences.Validation_cff')
 process.load('DQMOffline.Configuration.DQMOfflineMC_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -151,13 +157,13 @@ process.tuple_step = cms.Sequence(
 if options.isMINIAOD: 
     process.tuple_step = cms.Sequence(
         # Make HCAL tuples: Event, run, ls number
-        process.hcalTupleEvent*
+        process.hgcalTupleEvent*
         # Make HCAL tuples: gen info
         #process.hcalTupleGenParticles*
         #
-        process.hgcalTuplePackedPFCandidates*
+        process.tuplePackedPFCandidates*
         #
-        process.hcalTupleTree
+        process.hgcalTupleTree
     )
 
 #-----------------------------------------------------------------------------------

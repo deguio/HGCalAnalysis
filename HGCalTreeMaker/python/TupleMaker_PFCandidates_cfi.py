@@ -10,4 +10,6 @@ tuplePFCandidates = cms.EDProducer("TupleMaker_PFCandidates",
 tuplePackedPFCandidates = tuplePFCandidates.clone(
   source    = cms.untracked.InputTag('packedPFCandidates', ''),
   PackedCandidate = cms.untracked.bool(True),
+  Prefix    = cms.untracked.string  ("PFPar"),
+  Suffix    = cms.untracked.string  ("")
 )
