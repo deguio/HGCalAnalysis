@@ -10,6 +10,7 @@ HGCalTupleMaker_GenParticles::HGCalTupleMaker_GenParticles(const edm::ParameterS
 {
 
   produces< std::vector< double > >(prefix + "Pt"  + suffix );
+  produces< std::vector< double > >(prefix + "P"  + suffix );
   produces< std::vector< double > >(prefix + "Eta" + suffix );
   produces< std::vector< double > >(prefix + "Phi" + suffix );
   produces< std::vector< double > >(prefix + "M"   + suffix );
@@ -25,6 +26,7 @@ HGCalTupleMaker_GenParticles::HGCalTupleMaker_GenParticles(const edm::ParameterS
 void HGCalTupleMaker_GenParticles::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
 
   std::unique_ptr<std::vector<double> >            pt                ( new std::vector<double>           ());
+  std::unique_ptr<std::vector<double> >            p                 ( new std::vector<double>           ());
   std::unique_ptr<std::vector<double> >            eta               ( new std::vector<double>           ());
   std::unique_ptr<std::vector<double> >            phi               ( new std::vector<double>           ());
   std::unique_ptr<std::vector<double> >            mass              ( new std::vector<double>           ());
@@ -41,6 +43,7 @@ void HGCalTupleMaker_GenParticles::produce(edm::Event& iEvent, const edm::EventS
     {
 
       pt->push_back(iPart->pt());
+      p->push_back(iPart->p());
       eta->push_back(iPart->eta());
       phi->push_back(iPart->phi());
       mass->push_back(iPart->mass());
@@ -51,6 +54,7 @@ void HGCalTupleMaker_GenParticles::produce(edm::Event& iEvent, const edm::EventS
     }
 
   iEvent.put(move( pt              ) , prefix + "Pt"            + suffix );
+  iEvent.put(move( p               ) , prefix + "P"             + suffix );
   iEvent.put(move( eta             ) , prefix + "Eta"           + suffix );
   iEvent.put(move( phi             ) , prefix + "Phi"           + suffix );
   iEvent.put(move( mass            ) , prefix + "M"             + suffix );

@@ -5,9 +5,9 @@ hgcalTupleHGCDigis = cms.EDProducer("HGCalTupleMaker_HGCDigis",
         #cms.untracked.InputTag("mix","HGCDigisEE"),
         #cms.untracked.InputTag("mix","HGCDigisHEfront"),
         #cms.untracked.InputTag("mix","HGCDigisHEback")
-        cms.untracked.InputTag("hgcalDigis","EE"),
-        cms.untracked.InputTag("hgcalDigis","HEfront"),
-        cms.untracked.InputTag("hgcalDigis","HEback")
+        cms.untracked.InputTag("simHGCalUnsuppressedDigis","EE"),
+        cms.untracked.InputTag("simHGCalUnsuppressedDigis","HEfront"),
+        cms.untracked.InputTag("simHGCalUnsuppressedDigis","HEback")
         ),
   geometrySource = cms.untracked.vstring(
         'HGCalEESensitive',
