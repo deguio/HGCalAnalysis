@@ -129,25 +129,27 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
 				  ((geomType == 1) ? HGCSiliconDetId(detId).layer() :
 				   HGCScintillatorDetId(detId).layer()));
 	HGCSample  hgcSample = it->sample(SampleIndx);
-	uint16_t   gain      = hgcSample.toa();
+	uint16_t   toa       = hgcSample.toa();
 	uint16_t   adc       = hgcSample.data();
-	double     charge    = adc*gain;
-	fill(detId, geom0, index, layer, adc, charge);
+	fill(detId, geom0, index, layer, adc, toa);
 	  
 	std::vector<float> digis;
 	std::vector<int> ind;
-	//it->print(std::cout);
+	uint16_t adcSum = 0;
 	for (int i=0; i< it->size(); i++){
 	  HGCSample  hgcSampleTmp = it->sample(i);
 	  digis.push_back(hgcSampleTmp.data());
 	  ind.push_back(i);
+	  
+	  adcSum += hgcSampleTmp.data();
 
 	  if (debug){
 	    printf("HE isample: %6d, adc: %8d (%8d)\n",i,hgcSampleTmp.data(),adc);
 	  }
 	}
-	v_v_samples -> push_back ( digis );
+	v_v_samples     -> push_back ( digis );
 	v_v_sampleIndex -> push_back ( ind );
+	v_adcSum    -> push_back ( adcSum );
       }
     }
     
@@ -188,7 +190,8 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     }
     produces<std::vector<int>   > ( m_prefix + "Layer"  + m_suffix );
     produces<std::vector<uint16_t > > ( m_prefix + "ADC" + m_suffix );
-    produces<std::vector<float> > ( m_prefix + "Charge" + m_suffix );
+    produces<std::vector<uint16_t > > ( m_prefix + "ADCSum" + m_suffix );
+    produces<std::vector<float> > ( m_prefix + "Toa" + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Posx"   + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Posy"   + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Posz"   + m_suffix );
@@ -206,7 +209,8 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
   std::unique_ptr<std::vector<float> > v_phi;
   std::unique_ptr<std::vector<int  > > v_layer;
   std::unique_ptr<std::vector<uint16_t > > v_adc;
-  std::unique_ptr<std::vector<float> > v_charge;
+  std::unique_ptr<std::vector<uint16_t > > v_adcSum;
+  std::unique_ptr<std::vector<float> > v_toa;
   std::unique_ptr<std::vector<float> > v_posx;
   std::unique_ptr<std::vector<float> > v_posy;
   std::unique_ptr<std::vector<float> > v_posz;
@@ -294,7 +298,8 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     }
     v_layer  = std::unique_ptr<std::vector<int  > > ( new std::vector<int  > ());
     v_adc    = std::unique_ptr<std::vector<uint16_t > > ( new std::vector<uint16_t > ());
-    v_charge = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
+    v_adcSum = std::unique_ptr<std::vector<uint16_t > > ( new std::vector<uint16_t > ());
+    v_toa    = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
     v_posx   = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
     v_posy   = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
     v_posz   = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
@@ -318,7 +323,8 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     }
     iEvent.put( move(v_layer  ), m_prefix + "Layer"  + m_suffix );
     iEvent.put( move(v_adc    ), m_prefix + "ADC"    + m_suffix );
-    iEvent.put( move(v_charge ), m_prefix + "Charge" + m_suffix );
+    iEvent.put( move(v_adcSum ), m_prefix + "ADCSum" + m_suffix );
+    iEvent.put( move(v_toa    ), m_prefix + "Toa"    + m_suffix );
     iEvent.put( move(v_posx   ), m_prefix + "Posx"   + m_suffix );
     iEvent.put( move(v_posy   ), m_prefix + "Posy"   + m_suffix );
     iEvent.put( move(v_posz   ), m_prefix + "Posz"   + m_suffix );
@@ -330,10 +336,10 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
 
   //template<class Digi>          void HcalDigisValidation::reco(const edm::Event& iEvent, const edm::EventSetup& iSetup, const edm::EDGetTokenT<edm::SortedCollection<Digi> > & tok)
   //template<class dataFrameType> void HcalDigisValidation::reco(const edm::Event& iEvent, const edm::EventSetup& iSetup, const edm::EDGetTokenT<HcalDataFrameContainer<dataFrameType> > & tok)  
-    
+ 
   template<class T1, class T2>
   void fill(const T1& detId, const T2* geom, 
-	    int index, int layer, uint16_t adc, double charge) {
+	    int index, int layer, uint16_t adc, double toa) {
 
     //KH--- 
     double rout_layer[52]={
@@ -410,7 +416,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     }
     v_layer  -> push_back ( layer        );
     v_adc    -> push_back ( adc          );
-    v_charge -> push_back ( charge       );
+    v_toa    -> push_back ( toa       );
     v_posx   -> push_back ( global.x()   );
     v_posy   -> push_back ( global.y()   );
     v_posz   -> push_back ( global.z()   );
