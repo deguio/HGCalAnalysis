@@ -74,6 +74,12 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
     //-----------------------------------------------------
     
     loadAlgo();
+    std::map<int,float> m_energy;
+    std::map<int,int> m_ieta;
+    std::map<int,int> m_iphi;
+    std::map<int,int> m_layer;
+    std::map<int,int> m_index;
+
 
     //-----------------------------------------------------
     // edm::Handles
@@ -301,42 +307,56 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
 	
 	v_energy -> push_back ( it.energy() );
 
+	if(m_energy.find(id_) == m_energy.end())
+	  {
+	    m_energy[id_] = it.energy();
+	    m_ieta[id_] = ieta;
+	    m_iphi[id_] = iphi;
+	    m_layer[id_] = layer;
+	    m_index[id_] = index;
+	  }
+	else
+	  {
+	    m_energy[id_] += it.energy();
+	  }
+	
+
 	//KH--- 
 	if (debug_geom){
 	  
-	double rout_layer[52]={
-	  1567.5, 1567.5, 1575.6, 1575.6, 1583.7,
-	  1583.7, 1591.8, 1591.8, 1599.9, 1599.9,
-	  1608.0, 1608.0, 1616.1, 1616.1, 1624.2,
-	  1624.2, 1632.2, 1632.2, 1640.4, 1640.4,
-	  1648.5, 1648.5, 1656.6, 1656.6, 1664.7,
-	  1664.7, 1672.8, 1672.8, 1696.9, 1713.5,
-	  1730.1, 1746.7, 1763.3, 1779.9, 1796.4,
-	  1844.2, 1907.6, 1971.0, 2034.5, 2097.9,
-	  2184.6, 2299.8, 2415.0, 2530.2, 2645.3,
-	  2664.0, 2664.0, 2664.0, 2664.0, 2664.0,
-	  2664.0, 2664.0
-	};
-	int layer_index=layer-1;
-	if (index!=0) layer_index=layer+27;
-	
-	if ( fabs(gcoord.getEta()) > 3. || gcoord.perp()>rout_layer[layer_index]/10.+5.) {
-	  if ((hgcCons_[index]->geomMode() == HGCalGeometryMode::Hexagon8) ||
-	      (hgcCons_[index]->geomMode() == HGCalGeometryMode::Hexagon8Full)){
-	    printf("Simhits(Hexagon8) [cellU/V, waferU/V, eta, phil, layer, index, detid]: %4d %4d %4d %4d %6.2f %6.2f %4d %4d ",
-		   cellU,cellV,waferU,waferV,gcoord.getEta(),gcoord.getPhi(),layer,index);
-	    std::cout << id_  << std::endl;
-	    HGCSiliconDetId detId = HGCSiliconDetId(id_);
-	    std::cout << detId << std::endl;
+	  double rout_layer[52]={
+	    1567.5, 1567.5, 1575.6, 1575.6, 1583.7,
+	    1583.7, 1591.8, 1591.8, 1599.9, 1599.9,
+	    1608.0, 1608.0, 1616.1, 1616.1, 1624.2,
+	    1624.2, 1632.2, 1632.2, 1640.4, 1640.4,
+	    1648.5, 1648.5, 1656.6, 1656.6, 1664.7,
+	    1664.7, 1672.8, 1672.8, 1696.9, 1713.5,
+	    1730.1, 1746.7, 1763.3, 1779.9, 1796.4,
+	    1844.2, 1907.6, 1971.0, 2034.5, 2097.9,
+	    2184.6, 2299.8, 2415.0, 2530.2, 2645.3,
+	    2664.0, 2664.0, 2664.0, 2664.0, 2664.0,
+	    2664.0, 2664.0
+	  };
+	  int layer_index=layer-1;
+	  if (index!=0) layer_index=layer+27;
+
+	  if ( fabs(gcoord.getEta()) > 3. || gcoord.perp()>rout_layer[layer_index]/10.+5.) {
+	    if ((hgcCons_[index]->geomMode() == HGCalGeometryMode::Hexagon8) ||
+		(hgcCons_[index]->geomMode() == HGCalGeometryMode::Hexagon8Full)){
+	      printf("Simhits(Hexagon8) [cellU/V, waferU/V, eta, phil, layer, index, detid]: %4d %4d %4d %4d %6.2f %6.2f %4d %4d ",
+		     cellU,cellV,waferU,waferV,gcoord.getEta(),gcoord.getPhi(),layer,index);
+	      std::cout << id_  << std::endl;
+	      HGCSiliconDetId detId = HGCSiliconDetId(id_);
+	      std::cout << detId << std::endl;
+	    }
+	    else if (hgcCons_[index]->geomMode() == HGCalGeometryMode::Trapezoid){
+	      printf("Simhits(Trapezoid) [ieta, iphi, eta, phi, layer, index, detid]: %4d %4d %6.2f %6.2f %4d %4d ",
+		     ieta,iphi,gcoord.getEta(),gcoord.getPhi(),layer,index);
+	      std::cout << id_  << std::endl;
+	      HGCScintillatorDetId detId = HGCScintillatorDetId(id_);
+	      std::cout << detId << std::endl;
+	    }
 	  }
-	  else if (hgcCons_[index]->geomMode() == HGCalGeometryMode::Trapezoid){
-	    printf("Simhits(Trapezoid) [ieta, iphi, eta, phi, layer, index, detid]: %4d %4d %6.2f %6.2f %4d %4d ",
-		   ieta,iphi,gcoord.getEta(),gcoord.getPhi(),layer,index);
-	    std::cout << id_  << std::endl;
-	    HGCScintillatorDetId detId = HGCScintillatorDetId(id_);
-	    std::cout << detId << std::endl;
-	  }
-	}
 	
 	} // if debug_geom
 	//KH---
@@ -371,13 +391,21 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
 	v_posz   -> push_back ( gcoord.z() );
 	
       } // for-loop of PCaloHits
-
     } // Looping over different PCaloHit collections
+
+    // from map to vector
+    for(auto itr = m_energy.begin(); itr != m_energy.end(); ++itr)
+      {
+	v_int_energy -> push_back(m_energy[itr->first]);
+	v_int_ieta   -> push_back(m_ieta[itr->first]);
+	v_int_iphi   -> push_back(m_iphi[itr->first]);
+	v_int_layer  -> push_back(m_layer[itr->first]);
+	v_int_index  -> push_back(m_index[itr->first]);
+      }
 
     //-----------------------------------------------------
     // Put things into the event
     //-----------------------------------------------------
-    
     dumpAlgo(iEvent);
 
   }
@@ -392,6 +420,12 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
     m_prefix         (iConfig.getUntrackedParameter<std::string>  ("Prefix")),
     m_suffix         (iConfig.getUntrackedParameter<std::string>  ("Suffix")) {
 
+    produces<std::vector<float> > ( m_prefix + "IntEnergy" + m_suffix );
+    produces<std::vector<int> > ( m_prefix + "IntIEta" + m_suffix );
+    produces<std::vector<int> > ( m_prefix + "IntIPhi" + m_suffix );
+    produces<std::vector<int> > ( m_prefix + "IntLayer" + m_suffix );
+    produces<std::vector<int> > ( m_prefix + "IntIndex" + m_suffix );
+
     produces<std::vector<float> > ( m_prefix + "Energy" + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Time"   + m_suffix );
     produces<std::vector<int>   > ( m_prefix + "Subdet" + m_suffix );
@@ -400,22 +434,25 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
     produces<std::vector<float> > ( m_prefix + "Eta"    + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Phi"    + m_suffix );
     if (detid_store){
-    produces<std::vector<int> >   ( m_prefix + "IEta"   + m_suffix );
-    produces<std::vector<int> >   ( m_prefix + "IPhi"   + m_suffix );
-    produces<std::vector<int> >   ( m_prefix + "CellU"  + m_suffix );
-    produces<std::vector<int> >   ( m_prefix + "CellV"  + m_suffix );
-    produces<std::vector<int> >   ( m_prefix + "WaferU" + m_suffix );
-    produces<std::vector<int> >   ( m_prefix + "WaferV" + m_suffix );
+      produces<std::vector<int> >   ( m_prefix + "IEta"   + m_suffix );
+      produces<std::vector<int> >   ( m_prefix + "IPhi"   + m_suffix );
+      produces<std::vector<int> >   ( m_prefix + "CellU"  + m_suffix );
+      produces<std::vector<int> >   ( m_prefix + "CellV"  + m_suffix );
+      produces<std::vector<int> >   ( m_prefix + "WaferU" + m_suffix );
+      produces<std::vector<int> >   ( m_prefix + "WaferV" + m_suffix );
     }
     produces<std::vector<float> > ( m_prefix + "Posx"   + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Posy"   + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Posz"   + m_suffix );
 
   }
+  std::unique_ptr<std::vector<float> > v_int_energy;
+  std::unique_ptr<std::vector<int> > v_int_ieta;
+  std::unique_ptr<std::vector<int> > v_int_iphi;
+  std::unique_ptr<std::vector<int> > v_int_layer;
+  std::unique_ptr<std::vector<int> > v_int_index;
 
   std::unique_ptr<std::vector<float> > v_energy;
-  std::unique_ptr<std::vector<float> > v_energyem;
-  std::unique_ptr<std::vector<float> > v_energyhad;
   std::unique_ptr<std::vector<float> > v_time;
   std::unique_ptr<std::vector<int>   > v_id;
   std::unique_ptr<std::vector<int>   > v_index; // index for different input collections
@@ -503,6 +540,12 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
  protected:
 
   void loadAlgo(){
+    v_int_energy = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
+    v_int_ieta   = std::unique_ptr<std::vector<int> > ( new std::vector<int> ());
+    v_int_iphi   = std::unique_ptr<std::vector<int> > ( new std::vector<int> ());
+    v_int_layer  = std::unique_ptr<std::vector<int> > ( new std::vector<int> ());
+    v_int_index  = std::unique_ptr<std::vector<int> > ( new std::vector<int> ());
+
     v_energy = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
     v_time   = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
     v_subdet = std::unique_ptr<std::vector<int>   > ( new std::vector<int  > ());
@@ -525,6 +568,12 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
   }
   
   void dumpAlgo( edm::Event & iEvent ){
+    iEvent.put( move(v_int_energy ), m_prefix + "IntEnergy" + m_suffix );
+    iEvent.put( move(v_int_ieta   ), m_prefix + "IntIEta"   + m_suffix );
+    iEvent.put( move(v_int_iphi   ), m_prefix + "IntIPhi"   + m_suffix );
+    iEvent.put( move(v_int_layer  ), m_prefix + "IntLayer"  + m_suffix );
+    iEvent.put( move(v_int_index  ), m_prefix + "IntIndex"  + m_suffix );
+
     iEvent.put( move(v_energy ), m_prefix + "Energy" + m_suffix );
     iEvent.put( move(v_time   ), m_prefix + "Time"   + m_suffix );
     iEvent.put( move(v_subdet ), m_prefix + "Subdet" + m_suffix );
@@ -533,12 +582,12 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
     iEvent.put( move(v_eta    ), m_prefix + "Eta"    + m_suffix );
     iEvent.put( move(v_phi    ), m_prefix + "Phi"    + m_suffix );
     if (detid_store){
-    iEvent.put( move(v_ieta   ), m_prefix + "IEta"   + m_suffix );
-    iEvent.put( move(v_iphi   ), m_prefix + "IPhi"   + m_suffix );
-    iEvent.put( move(v_cellu  ), m_prefix + "CellU"  + m_suffix );
-    iEvent.put( move(v_cellv  ), m_prefix + "CellV"  + m_suffix );
-    iEvent.put( move(v_waferu ), m_prefix + "WaferU" + m_suffix );
-    iEvent.put( move(v_waferv ), m_prefix + "WaferV" + m_suffix );
+      iEvent.put( move(v_ieta   ), m_prefix + "IEta"   + m_suffix );
+      iEvent.put( move(v_iphi   ), m_prefix + "IPhi"   + m_suffix );
+      iEvent.put( move(v_cellu  ), m_prefix + "CellU"  + m_suffix );
+      iEvent.put( move(v_cellv  ), m_prefix + "CellV"  + m_suffix );
+      iEvent.put( move(v_waferu ), m_prefix + "WaferU" + m_suffix );
+      iEvent.put( move(v_waferv ), m_prefix + "WaferV" + m_suffix );
     }
     iEvent.put( move(v_posx   ), m_prefix + "Posx"   + m_suffix );
     iEvent.put( move(v_posy   ), m_prefix + "Posy"   + m_suffix );

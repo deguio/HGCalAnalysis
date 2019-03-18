@@ -124,7 +124,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
 
 	//KH HGCHEDetId detId     = (it->id());
 	//KH int        layer     = detId.layer();
-	DetId      detId     = it->id();
+	DetId      detId(it->id().rawId());
 	int        layer     = ((geomType == 0) ? HGCalDetId(detId).layer() :
 				  ((geomType == 1) ? HGCSiliconDetId(detId).layer() :
 				   HGCScintillatorDetId(detId).layer()));
@@ -132,7 +132,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
 	uint16_t   toa       = hgcSample.toa();
 	uint16_t   adc       = hgcSample.data();
 	fill(detId, geom0, index, layer, adc, toa);
-	  
+
 	std::vector<float> digis;
 	std::vector<int> ind;
 	uint16_t adcSum = 0;
@@ -168,7 +168,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     m_geometrySource (iConfig.getUntrackedParameter<std::vector<std::string> >("geometrySource")),
     m_prefix         (iConfig.getUntrackedParameter<std::string>  ("Prefix")),
     m_suffix         (iConfig.getUntrackedParameter<std::string>  ("Suffix")),
-    SampleIndx       (iConfig.getUntrackedParameter<int>("SampleIndx",2)) {
+    SampleIndx       (iConfig.getUntrackedParameter<int>("SampleIndx",9)) {
 
     m_HGCEEDigisToken = consumes<HGCalDigiCollection>(m_HGCDigisTags[0]);
     m_HGCHEDigisToken = consumes<HGCalDigiCollection>(m_HGCDigisTags[1]);
@@ -396,6 +396,10 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
       ieta             =ietaAbs;
       if (detId0.zside()<0) ieta=-ietaAbs;
       iphi             = detId0.iphi();
+
+
+      //      std::cout << "eta, phi, ieta, iphi" << global.eta() << " " << global.phi() << " " << ieta << " " << iphi << std::endl;
+
       if (print_debug_geom){
 	printf("Digis(Trapezoid) [ieta, iphi, eta, phi, r(rmax), layer, index]: %4d %4d %6.2f %6.2f %6.2f ( %6.2f ) %4d %4d\n",
 	       ieta,iphi,global.eta(),double(global.phi()),global.perp(),rout_layer[layer_index]/10.,layer,index);
@@ -407,12 +411,12 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     v_eta    -> push_back ( global.eta() );
     v_phi    -> push_back ( global.phi() );
     if (detid_store){
-    v_ieta   -> push_back ( ieta         );
-    v_iphi   -> push_back ( iphi         );
-    v_cellu  -> push_back ( cellU        );
-    v_cellv  -> push_back ( cellV        );
-    v_waferu -> push_back ( waferU       );
-    v_waferv -> push_back ( waferV       );
+      v_ieta   -> push_back ( ieta         );
+      v_iphi   -> push_back ( iphi         );
+      v_cellu  -> push_back ( cellU        );
+      v_cellv  -> push_back ( cellV        );
+      v_waferu -> push_back ( waferU       );
+      v_waferv -> push_back ( waferV       );
     }
     v_layer  -> push_back ( layer        );
     v_adc    -> push_back ( adc          );
