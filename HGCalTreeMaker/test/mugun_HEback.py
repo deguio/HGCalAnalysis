@@ -20,15 +20,15 @@ options.register('inputFile',
                  VarParsing.VarParsing.varType.string,
                  "input file")
 
-options.register('SoN',
+options.register('noiseScenario',
                  '',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
-                 "S/N ratio")
+                 "noise")
 
 options.parseArguments()
 
-print "InputFile: ", options.inputFile, " S/N: ", options.SoN
+print "InputFile: ", options.inputFile, " noiseScenario: ", options.noiseScenario, "/fb"
 
 if options.inputFile != '':
     procName  = "DIGI"
@@ -109,10 +109,16 @@ process.VtxSmeared.SigmaZ = 0.00001
 process.g4SimHits.Generator.ApplyPCuts = cms.bool(False)
 process.g4SimHits.Generator.ApplyEtaCuts = cms.bool(False)
 
-#--- CUSTOMIZATION: special time phase for HF surface 
+#--- CUSTOMIZATION mixing module
 # (-37 ns wrt regular pp interaction point) 
 #process.mix.digitizers.hcal.hf1.timePhase = cms.double(-24.0)   
 #process.mix.digitizers.hcal.hf2.timePhase = cms.double(-23.0)  
+
+#from SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi import *
+#process.mix.theDigitizers = cms.PSet( hgcee      = cms.PSet( hgceeDigitizer),
+#                                      hgchefront = cms.PSet( hgchefrontDigitizer),
+#                                      hgcheback  = cms.PSet( hgchebackDigitizer)
+#                                      )
 
 #--- CUSTOMIZATION of vertex smearing
 process.VtxSmeared.src = cms.InputTag("generator", "unsmeared") 
@@ -121,9 +127,13 @@ process.g4SimHits.Generator.HepMCProductLabel = cms.InputTag('VtxSmeared')
 
 
 #--- CUSTOMIZATION scenario
-process.HGCAL_noise_MIP = cms.PSet(
-    value = cms.double(1./options.SoN)
-    )
+from SLHCUpgradeSimulations.Configuration.aging import customise_aging_3000
+if options.noiseScenario == 3000:
+    process = customise_aging_3000(process)
+
+#process.HGCAL_noise_MIP = cms.PSet(
+#    value = cms.double(1./options.SoN)
+#    )
 
 
 #-------------------
@@ -189,9 +199,6 @@ process.schedule = cms.Schedule(
     process.gen_path,
     process.ntu_path
 )
-
-
-
 
 
 #process.outpath = cms.EndPath(process.FEVToutput)

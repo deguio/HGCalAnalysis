@@ -168,7 +168,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     m_geometrySource (iConfig.getUntrackedParameter<std::vector<std::string> >("geometrySource")),
     m_prefix         (iConfig.getUntrackedParameter<std::string>  ("Prefix")),
     m_suffix         (iConfig.getUntrackedParameter<std::string>  ("Suffix")),
-    SampleIndx       (iConfig.getUntrackedParameter<int>("SampleIndx",9)) {
+    SampleIndx       (iConfig.getUntrackedParameter<int>("SampleIndx",2)) {
 
     m_HGCEEDigisToken = consumes<HGCalDigiCollection>(m_HGCDigisTags[0]);
     m_HGCHEDigisToken = consumes<HGCalDigiCollection>(m_HGCDigisTags[1]);
