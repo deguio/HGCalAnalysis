@@ -1,3 +1,5 @@
+#python -i mugun_HEback.py noiseScenario=0 algo=1 scaleByArea=false scaleByDose=false
+
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 import os
@@ -26,9 +28,29 @@ options.register('noiseScenario',
                  VarParsing.VarParsing.varType.float,
                  "noise")
 
+options.register('algo',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "algo") #0 empty digitizer, 1 calice digitizer, 2 realistic digitizer
+
+options.register('scaleByArea',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "scaleByArea")
+
+options.register('scaleByDose',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "scaleByDose")
+
+
+
 options.parseArguments()
 
-print "InputFile: ", options.inputFile, " noiseScenario: ", options.noiseScenario, "/fb"
+print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "scaleByDose=", options.scaleByDose
 
 if options.inputFile != '':
     procName  = "DIGI"
@@ -99,20 +121,20 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
 ###
 #process.VtxSmeared.MeanX = 61.0       # R=57.6-68.6cm ieta ring 33, *cos (0.261799)
 #process.VtxSmeared.MeanY = 16.3       #                             *sin (0.261799)
-#process.VtxSmeared.MeanZ = 1100.0     # 1115 cm - HF surface 
+#process.VtxSmeared.MeanZ = 1100.0     # 1115 cm - HF surface
 
 process.VtxSmeared.SigmaX = 0.00001   # further reduce vertex smearing
 process.VtxSmeared.SigmaY = 0.00001
 process.VtxSmeared.SigmaZ = 0.00001
- 
+
 #--- CUSTOMIZATION: releasing g4Sim constraints (PR #25251)
 process.g4SimHits.Generator.ApplyPCuts = cms.bool(False)
 process.g4SimHits.Generator.ApplyEtaCuts = cms.bool(False)
 
 #--- CUSTOMIZATION mixing module
-# (-37 ns wrt regular pp interaction point) 
-#process.mix.digitizers.hcal.hf1.timePhase = cms.double(-24.0)   
-#process.mix.digitizers.hcal.hf2.timePhase = cms.double(-23.0)  
+# (-37 ns wrt regular pp interaction point)
+#process.mix.digitizers.hcal.hf1.timePhase = cms.double(-24.0)
+#process.mix.digitizers.hcal.hf2.timePhase = cms.double(-23.0)
 
 #from SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi import *
 #process.mix.theDigitizers = cms.PSet( hgcee      = cms.PSet( hgceeDigitizer),
@@ -121,7 +143,7 @@ process.g4SimHits.Generator.ApplyEtaCuts = cms.bool(False)
 #                                      )
 
 #--- CUSTOMIZATION of vertex smearing
-process.VtxSmeared.src = cms.InputTag("generator", "unsmeared") 
+process.VtxSmeared.src = cms.InputTag("generator", "unsmeared")
 process.generatorSmeared = cms.EDProducer("GeneratorSmearedProducer")
 process.g4SimHits.Generator.HepMCProductLabel = cms.InputTag('VtxSmeared')
 
@@ -130,6 +152,11 @@ process.g4SimHits.Generator.HepMCProductLabel = cms.InputTag('VtxSmeared')
 from SLHCUpgradeSimulations.Configuration.aging import customise_aging_3000
 if options.noiseScenario == 3000:
     process = customise_aging_3000(process)
+
+process.hgchebackDigitizer.digiCfg.algo = cms.uint32(options.algo)
+process.hgchebackDigitizer.digiCfg.scaleByArea = cms.bool(options.scaleByArea)
+process.hgchebackDigitizer.digiCfg.scaleByDose = cms.bool(options.scaleByDose)
+
 
 #process.HGCAL_noise_MIP = cms.PSet(
 #    value = cms.double(1./options.SoN)
@@ -188,7 +215,7 @@ process.ntu_path = cms.Path(
 process.gen_path = cms.Path(
  process.mix *
  process.addPileupInfo *
- process.rawDataCollector 
+ process.rawDataCollector
 )
 if procName == 'GEN':
     process.gen_path.insert(0,process.generator * process.VtxSmeared * process.generatorSmeared * process.genParticles * process.g4SimHits)
