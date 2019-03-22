@@ -25,8 +25,8 @@ config.JobType.psetName = '../mugun_HEback.py'
 config.JobType.pyCfgParams = [] #see below
 config.JobType.pluginName = 'PrivateMC'
 #config.JobType.outputFiles = [''] #use autocollection
-#config.JobType.maxJobRuntimeMin = 2750 #45 h
-#config.JobType.maxMemoryMB = 2500 #2.5 GB
+config.JobType.maxJobRuntimeMin = 2750 #45 h
+config.JobType.maxMemoryMB = 2500 #2.5 GB
 config.JobType.allowUndistributedCMSSW = True
 
 config.section_('Data')

@@ -12,7 +12,7 @@ from Configuration.StandardSequences.Eras import eras
 sourceTag = "EmptySource"
 procName  = "GEN"
 infile    = []
-maxEvents = 20
+maxEvents = 5
 
 
 options = VarParsing.VarParsing('analysis')
@@ -87,7 +87,7 @@ process.load('Configuration.Geometry.GeometryExtended2023D28Reco_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.g4SimHits.UseMagneticField = False #no mag field
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(maxEvents)
@@ -153,9 +153,9 @@ from SLHCUpgradeSimulations.Configuration.aging import customise_aging_3000
 if options.noiseScenario == 3000:
     process = customise_aging_3000(process)
 
-process.hgchebackDigitizer.digiCfg.algo = cms.uint32(options.algo)
-process.hgchebackDigitizer.digiCfg.scaleByArea = cms.bool(options.scaleByArea)
-process.hgchebackDigitizer.digiCfg.scaleByDose = cms.bool(options.scaleByDose)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.algo = cms.uint32(options.algo)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByArea = cms.bool(options.scaleByArea)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByDose = cms.bool(options.scaleByDose)
 
 
 #process.HGCAL_noise_MIP = cms.PSet(
