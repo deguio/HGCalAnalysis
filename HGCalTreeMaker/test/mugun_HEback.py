@@ -50,13 +50,16 @@ options.register('scaleByDose',
 
 options.parseArguments()
 
-print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "scaleByDose=", options.scaleByDose
+print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "scaleByDose=", options.scaleByDose, "maxEvents=", options.maxEvents
 
 if options.inputFile != '':
     procName  = "DIGI"
     sourceTag = "PoolSource"
     infile    = [options.inputFile]
     maxEvents = -1
+
+if options.maxEvents:
+    maxEvents = options.maxEvents
 
 
 #-----------------------------------
@@ -232,3 +235,9 @@ process.schedule = cms.Schedule(
 
 #process.options = cms.untracked.PSet(numberOfThreads = cms.untracked.uint32(4),
 #                                     numberOfStreams = cms.untracked.uint32(0))
+
+
+#random seed generation
+from IOMC.RandomEngine.RandomServiceHelper import RandomNumberServiceHelper
+randSvc = RandomNumberServiceHelper(process.RandomNumberGeneratorService)
+randSvc.populate()

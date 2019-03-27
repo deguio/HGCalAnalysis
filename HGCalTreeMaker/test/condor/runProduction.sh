@@ -17,7 +17,7 @@ echo "Work dir: ${WORKDIR} at `hostname`"
 echo $BASENAME
 
 
-outDir=/eos/cms/store/group/dpg_hgcal/comm_hgcal/deguio/gen_mu150_scan/
+outDir=/eos/cms/store/group/dpg_hgcal/comm_hgcal/deguio/gen_mu150_scan_highStat_randSeed/
 mkdir -p ${outDir}
 
 cd /afs/cern.ch/work/d/deguio/HGCAL/DigiStudies/CMSSW_10_6_0_pre2_digiDev/src/HGCalAnalysis/HGCalTreeMaker/test/condor/

@@ -13,8 +13,8 @@ SCALEBYAREA   = [True, False]
 SCALEBYDOSE   = [True, False]
 
 #JOB PARAMS
-NJOBS       = 2  #number of jobs per configuration
-UNITSPERJOB = 3
+NJOBS       = 100  #number of jobs per configuration
+UNITSPERJOB = 50
 EXEC        = '/afs/cern.ch/work/d/deguio/HGCAL/DigiStudies/CMSSW_10_6_0_pre2_digiDev/src/HGCalAnalysis/HGCalTreeMaker/test/condor/runProduction.sh'
 FOLDERNAME  = 'gen_mu150'
 
@@ -35,7 +35,7 @@ for noise in NOISESCENARIO:
     for al in ALGO:
         for scA in SCALEBYAREA:
             for scD in SCALEBYDOSE:
-                requestName = FOLDERNAME+"_noiseScenario_"+str(noise)+"_algo_"+str(al)+"_scaleArea_"+str(scA)+"_scaleDose_"+str(scD)
+                requestName = FOLDERNAME+"_$(ProcId)_noiseScenario_"+str(noise)+"_algo_"+str(al)+"_scaleArea_"+str(scA)+"_scaleDose_"+str(scD)
                 requestNameList.append(requestName)
                 cfgParams = '$(ProcId) noiseScenario='+str(noise)+' algo='+str(al)+' scaleByArea='+str(scA)+' scaleByDose='+str(scD)+' maxEvents='+str(UNITSPERJOB)
                 pyCfgParamsList.append(cfgParams)
