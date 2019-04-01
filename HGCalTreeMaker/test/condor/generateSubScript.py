@@ -8,9 +8,8 @@ import time
 
 #POSSIBLE CONFIGURATIONS
 NOISESCENARIO = [0, 3000]
-ALGO          = [0, 1, 2]
+ALGO          = [1, 2]
 SCALEBYAREA   = [True, False]
-SCALEBYDOSE   = [True, False]
 
 #JOB PARAMS
 NJOBS       = 100  #number of jobs per configuration
@@ -34,11 +33,10 @@ pyCfgParamsList = []
 for noise in NOISESCENARIO:
     for al in ALGO:
         for scA in SCALEBYAREA:
-            for scD in SCALEBYDOSE:
-                requestName = FOLDERNAME+"_$(ProcId)_noiseScenario_"+str(noise)+"_algo_"+str(al)+"_scaleArea_"+str(scA)+"_scaleDose_"+str(scD)
-                requestNameList.append(requestName)
-                cfgParams = '$(ProcId) noiseScenario='+str(noise)+' algo='+str(al)+' scaleByArea='+str(scA)+' scaleByDose='+str(scD)+' maxEvents='+str(UNITSPERJOB)
-                pyCfgParamsList.append(cfgParams)
+            requestName = FOLDERNAME+"_$(ProcId)_noiseScenario_"+str(noise)+"_algo_"+str(al)+"_scaleArea_"+str(scA)
+            requestNameList.append(requestName)
+            cfgParams = '$(ProcId) noiseScenario='+str(noise)+' algo='+str(al)+' scaleByArea='+str(scA)+' maxEvents='+str(UNITSPERJOB)
+            pyCfgParamsList.append(cfgParams)
 
 
 #prepare condor sub fileName

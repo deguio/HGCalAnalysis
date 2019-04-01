@@ -1,4 +1,4 @@
-#python -i mugun_HEback.py noiseScenario=0 algo=1 scaleByArea=false scaleByDose=false
+#python -i mugun_HEback.py noiseScenario=0 algo=1 scaleByArea=false
 
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
@@ -40,17 +40,10 @@ options.register('scaleByArea',
                  VarParsing.VarParsing.varType.bool,
                  "scaleByArea")
 
-options.register('scaleByDose',
-                 '',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.bool,
-                 "scaleByDose")
-
-
 
 options.parseArguments()
 
-print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "scaleByDose=", options.scaleByDose, "maxEvents=", options.maxEvents
+print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "maxEvents=", options.maxEvents
 
 if options.inputFile != '':
     procName  = "DIGI"
@@ -158,7 +151,6 @@ if options.noiseScenario == 3000:
 
 process.mix.digitizers.hgchebackDigitizer.digiCfg.algo = cms.uint32(options.algo)
 process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByArea = cms.bool(options.scaleByArea)
-process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByDose = cms.bool(options.scaleByDose)
 
 
 #process.HGCAL_noise_MIP = cms.PSet(
