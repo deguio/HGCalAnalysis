@@ -8,13 +8,13 @@ import time
 
 #POSSIBLE CONFIGURATIONS
 NOISESCENARIO = [0, 3000]
-ALGO          = [1, 2]
-SCALEBYAREA   = [True, False]
+ALGO          = [2]
+SCALEBYAREA   = [True]
 
 #JOB PARAMS
-NJOBS       = 100  #number of jobs per configuration
+NJOBS       = 10  #number of jobs per configuration
 UNITSPERJOB = 50
-EXEC        = '/afs/cern.ch/work/d/deguio/HGCAL/DigiStudies/CMSSW_10_6_0_pre2_digiDev/src/HGCalAnalysis/HGCalTreeMaker/test/condor/runProduction.sh'
+EXEC        = '/afs/cern.ch/work/d/deguio/HGCAL/DigiStudies/CMSSW_10_6_X_2019-04-07-0000_preparePR/src/HGCalAnalysis/HGCalTreeMaker/test/condor/runProduction.sh'
 FOLDERNAME  = 'gen_mu150'
 
 

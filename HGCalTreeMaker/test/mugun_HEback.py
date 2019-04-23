@@ -58,7 +58,7 @@ if options.maxEvents:
 #-----------------------------------
 # Standard CMSSW Imports/Definitions
 #-----------------------------------
-process = cms.Process(procName,eras.Phase2C4)
+process = cms.Process(procName,eras.Phase2C8)
 
 process.load("Configuration.StandardSequences.SimulationRandomNumberGeneratorSeeds_cff")
 process.load("Configuration.StandardSequences.Simulation_cff")
@@ -74,12 +74,12 @@ process.load('Configuration.EventContent.EventContent_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-from Configuration.AlCa.autoCond import autoCond
-process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
 #process.load("Configuration.StandardSequences.GeometryDB_cff")
-process.load('Configuration.Geometry.GeometryExtended2023D28Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D41Reco_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.g4SimHits.UseMagneticField = False #no mag field
 
