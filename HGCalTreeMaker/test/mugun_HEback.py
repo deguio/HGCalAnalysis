@@ -2,6 +2,7 @@
 
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
+import random
 import os
 
 from Configuration.StandardSequences.Eras import eras
@@ -12,6 +13,7 @@ from Configuration.StandardSequences.Eras import eras
 sourceTag = "EmptySource"
 procName  = "GEN"
 infile    = []
+pulibrary = '/eos/cms/store/group/dpg_hgcal/comm_hgcal/deguio/pu_library/'
 maxEvents = 5
 
 
@@ -40,10 +42,16 @@ options.register('scaleByArea',
                  VarParsing.VarParsing.varType.bool,
                  "scaleByArea")
 
+options.register('pileup',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "pileup")
+
 
 options.parseArguments()
 
-print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "maxEvents=", options.maxEvents
+print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "pileup=", options.pileup, "maxEvents=", options.maxEvents
 
 if options.inputFile != '':
     procName  = "DIGI"
@@ -65,7 +73,24 @@ process.load("Configuration.StandardSequences.Simulation_cff")
 
 process.load('RecoLocalCalo.Configuration.RecoLocalCalo_Cosmics_cff')
 
-process.load("SimGeneral.MixingModule.mixNoPU_cfi")
+if options.pileup==0:
+    process.load("SimGeneral.MixingModule.mixNoPU_cfi")
+else:
+    process.load('SimGeneral.MixingModule.mix_POISSON_average_cfi')
+    process.mix.input.nbPileupEvents.averageNumber = cms.double(options.pileup)
+    process.mix.bunchspace = cms.int32(25)
+    process.mix.minBunch = cms.int32(-2)
+    process.mix.maxBunch = cms.int32(2)
+
+    if options.noiseScenario != 0:
+        pulibrary += 'endOfLife'
+    else:
+        pulibrary += 'beginOfLife'
+    mixFiles=[os.path.join(pulibrary.replace('/eos/cms',''),f) for f in os.listdir(pulibrary)]
+    random.shuffle(mixFiles)
+    process.mix.input.fileNames = cms.untracked.vstring(mixFiles)
+
+
 process.load('Configuration.StandardSequences.Digi_cff')
 process.load('Configuration/StandardSequences/DigiToRaw_cff')
 process.load('Configuration/StandardSequences/RawToDigi_cff')
@@ -148,6 +173,7 @@ process.g4SimHits.Generator.HepMCProductLabel = cms.InputTag('VtxSmeared')
 from SLHCUpgradeSimulations.Configuration.aging import customise_aging_3000
 if options.noiseScenario == 3000:
     process = customise_aging_3000(process)
+
 
 process.mix.digitizers.hgchebackDigitizer.digiCfg.algo = cms.uint32(options.algo)
 process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByArea = cms.bool(options.scaleByArea)

@@ -8,21 +8,19 @@ import time
 
 #POSSIBLE CONFIGURATIONS
 NOISESCENARIO = [0, 3000]
+PILEUP        = [0, 200]
 ALGO          = [2]
 SCALEBYAREA   = [True]
 
 #JOB PARAMS
 NJOBS       = 10  #number of jobs per configuration
-UNITSPERJOB = 50
-EXEC        = '/afs/cern.ch/work/d/deguio/HGCAL/DigiStudies/CMSSW_10_6_X_2019-04-07-0000_preparePR/src/HGCalAnalysis/HGCalTreeMaker/test/condor/runProduction.sh'
+UNITSPERJOB = 10
+EXEC        = 'runProduction.sh'
 FOLDERNAME  = 'gen_mu150'
 
 
-
-
-
-
 pwd = os.environ['PWD']
+EXEC = pwd+"/"+EXEC
 current_time = datetime.datetime.now()
 timeMarker = "submit_%04d%02d%02d_%02d%02d%02d" % (current_time.year,current_time.month,current_time.day,current_time.hour,current_time.minute,current_time.second)
 workingDir = pwd+"/"+timeMarker
@@ -31,12 +29,13 @@ os.system("mkdir -p "+workingDir)
 requestNameList = []
 pyCfgParamsList = []
 for noise in NOISESCENARIO:
-    for al in ALGO:
-        for scA in SCALEBYAREA:
-            requestName = FOLDERNAME+"_$(ProcId)_noiseScenario_"+str(noise)+"_algo_"+str(al)+"_scaleArea_"+str(scA)
-            requestNameList.append(requestName)
-            cfgParams = '$(ProcId) noiseScenario='+str(noise)+' algo='+str(al)+' scaleByArea='+str(scA)+' maxEvents='+str(UNITSPERJOB)
-            pyCfgParamsList.append(cfgParams)
+    for pu in PILEUP:
+        for al in ALGO:
+            for scA in SCALEBYAREA:
+                requestName = FOLDERNAME+"_$(ProcId)_noiseScenario_"+str(noise)+"_pileup_"+str(pu)+"_algo_"+str(al)+"_scaleArea_"+str(scA)
+                requestNameList.append(requestName)
+                cfgParams = '$(ProcId) noiseScenario='+str(noise)+' algo='+str(al)+' pileup='+str(pu)+' scaleByArea='+str(scA)+' maxEvents='+str(UNITSPERJOB)
+                pyCfgParamsList.append(cfgParams)
 
 
 #prepare condor sub fileName
@@ -55,3 +54,4 @@ with open(workingDir+"/condor.sub", "w") as fo:
         fo.write("arguments = "+pars+"\n")
         fo.write("queue "+str(NJOBS)+"\n")
         fo.write("\n")
+

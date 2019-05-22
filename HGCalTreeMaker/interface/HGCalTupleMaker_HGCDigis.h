@@ -60,36 +60,36 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
   const std::string     m_suffix;
 
   int SampleIndx;
-  
+
   bool debug=false;
   bool debug_geom=false;
   bool detid_store=true;
-  
-  //HGC Geometry                                                                                                     
+
+  //HGC Geometry
   std::vector<const HGCalDDDConstants*> hgcCons_;
   std::vector<const HGCalGeometry*>     hgcGeometry_;
   const HcalDDDSimConstants*            hcCons_;
   const HcalDDDRecConstants*            hcConr_;
   const CaloSubdetectorGeometry*        hcGeometry_;
-  
-  void produce( edm::Event & iEvent, const edm::EventSetup & iSetup) { 
+
+  void produce( edm::Event & iEvent, const edm::EventSetup & iSetup) {
 
     //-----------------------------------------------------
     // Prepare to put things into event
     //-----------------------------------------------------
-    
+
     loadAlgo();
 
     //-----------------------------------------------------
     // edm::Handles
     //-----------------------------------------------------
-    
+
     edm::Handle<HGCalDigiCollection> HGCEEDigis;
     edm::Handle<HGCalDigiCollection> HGCHEDigis;
     edm::Handle<HGCalDigiCollection> HGCBHDigis;
 
     int geomType(0);
-    
+
     // Loop over input tags
     for( typename std::vector<edm::InputTag>::const_iterator
 	   tag = m_HGCDigisTags.begin(); tag != m_HGCDigisTags.end(); ++tag ) {
@@ -117,7 +117,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
 
       HGCBHDigis.clear();
       iEvent.getByToken(m_HGCDigisTokens[index], HGCBHDigis);
-	
+
       const HGCalDigiCollection* bhDigis = HGCBHDigis.product(); // get a ptr to the product
       for(auto it = bhDigis->begin(); it != bhDigis->end(); ++it) {
 	//worker_->run1(evt, it, *heUncalibRechits);
@@ -140,7 +140,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
 	  HGCSample  hgcSampleTmp = it->sample(i);
 	  digis.push_back(hgcSampleTmp.data());
 	  ind.push_back(i);
-	  
+
 	  adcSum += hgcSampleTmp.data();
 
 	  if (debug){
@@ -152,17 +152,17 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
 	v_adcSum    -> push_back ( adcSum );
       }
     }
-    
+
     //-----------------------------------------------------
     // Put things into the event
     //-----------------------------------------------------
-    
+
     dumpAlgo(iEvent);
 
   }
 
  public:
-  
+
  HGCalTupleMaker_HGCDigis(const edm::ParameterSet& iConfig) :
     m_HGCDigisTags (iConfig.getUntrackedParameter<std::vector<edm::InputTag> >("source")),
     m_geometrySource (iConfig.getUntrackedParameter<std::vector<std::string> >("geometrySource")),
@@ -177,7 +177,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     m_HGCDigisTokens.push_back(m_HGCEEDigisToken);
     m_HGCDigisTokens.push_back(m_HGCHEDigisToken);
     m_HGCDigisTokens.push_back(m_HGCBHDigisToken);
-    
+
     produces<std::vector<float> > ( m_prefix + "Eta"    + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Phi"    + m_suffix );
     if (detid_store){
@@ -204,7 +204,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     //produces<std::vector<int>   > ( m_prefix + "Aux"    + m_suffix );
     //produces<std::vector<float> > ( m_prefix + "Time"   + m_suffix );
     }
-  
+
   std::unique_ptr<std::vector<float> > v_eta;
   std::unique_ptr<std::vector<float> > v_phi;
   std::unique_ptr<std::vector<int  > > v_layer;
@@ -224,12 +224,12 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
   std::unique_ptr<std::vector<int> > v_cellv;
   std::unique_ptr<std::vector<int> > v_waferu;
   std::unique_ptr<std::vector<int> > v_waferv;
-  
+
   void beginRun(const edm::Run&, const edm::EventSetup& iSetup){
 
     //initiating HGC Geometry
     for (size_t i=0; i<m_geometrySource.size(); i++) {
-      
+
       // HCAL for BH/HEB
       if (m_geometrySource[i].find("HCal") != std::string::npos) {
         edm::ESHandle<HcalDDDSimConstants> pHSNDC;
@@ -271,9 +271,9 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
                                         << m_geometrySource[i] << std::endl;
         }
         edm::ESHandle<HGCalGeometry> hgcGeom;
-        iSetup.get<IdealGeometryRecord>().get(m_geometrySource[i],hgcGeom);     
+        iSetup.get<IdealGeometryRecord>().get(m_geometrySource[i],hgcGeom);
         if(hgcGeom.isValid()) {
-          hgcGeometry_.push_back(hgcGeom.product());    
+          hgcGeometry_.push_back(hgcGeom.product());
         } else {
           edm::LogWarning("HGCalValid") << "Cannot initiate HGCalGeometry for "
                                         << m_geometrySource[i] << std::endl;
@@ -309,7 +309,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     v_v_sampleIndex = std::unique_ptr<std::vector<std::vector<int> > >   ( new std::vector<std::vector<int> > ());
 
   }
-  
+
   void dumpAlgo( edm::Event & iEvent ){
     iEvent.put( move(v_eta    ), m_prefix + "Eta"    + m_suffix );
     iEvent.put( move(v_phi    ), m_prefix + "Phi"    + m_suffix );
@@ -335,13 +335,13 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
   }
 
   //template<class Digi>          void HcalDigisValidation::reco(const edm::Event& iEvent, const edm::EventSetup& iSetup, const edm::EDGetTokenT<edm::SortedCollection<Digi> > & tok)
-  //template<class dataFrameType> void HcalDigisValidation::reco(const edm::Event& iEvent, const edm::EventSetup& iSetup, const edm::EDGetTokenT<HcalDataFrameContainer<dataFrameType> > & tok)  
- 
+  //template<class dataFrameType> void HcalDigisValidation::reco(const edm::Event& iEvent, const edm::EventSetup& iSetup, const edm::EDGetTokenT<HcalDataFrameContainer<dataFrameType> > & tok)
+
   template<class T1, class T2>
-  void fill(const T1& detId, const T2* geom, 
+  void fill(const T1& detId, const T2* geom,
 	    int index, int layer, uint16_t adc, double toa) {
 
-    //KH--- 
+    //KH---
     double rout_layer[52]={
       1567.5, 1567.5, 1575.6, 1575.6, 1583.7,
       1583.7, 1591.8, 1591.8, 1599.9, 1599.9,
@@ -358,9 +358,9 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     int layer_index=layer-1;
     if (index!=0) layer_index=layer+27;
     //KH---
-    
+
     GlobalPoint global = geom->getPosition(detId);
-    
+
     if (debug) std::cout << layer << " " << global.z() << std::endl;
 
     //KH----
@@ -407,7 +407,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
       }
     }
     //KH---
-    
+
     v_eta    -> push_back ( global.eta() );
     v_phi    -> push_back ( global.phi() );
     if (detid_store){
@@ -426,7 +426,7 @@ class HGCalTupleMaker_HGCDigis : public edm::EDProducer {
     v_posz   -> push_back ( global.z()   );
     v_index  -> push_back ( index        );
   }
-    
+
 };
 
 #endif
