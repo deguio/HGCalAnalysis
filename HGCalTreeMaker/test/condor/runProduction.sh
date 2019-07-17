@@ -17,10 +17,10 @@ echo "Work dir: ${WORKDIR} at `hostname`"
 echo $BASENAME
 
 
-outDir=/eos/cms/store/group/dpg_hgcal/comm_hgcal/deguio/gen_mu150_20190515/
+outDir=/eos/cms/store/group/dpg_hgcal/comm_hgcal/deguio/gen_mu150_20190717/
 mkdir -p ${outDir}
 
-cd /afs/cern.ch/work/d/deguio/HGCAL/DigiStudies/CMSSW_10_6_0_pre4_occStudies/src/HGCalAnalysis/HGCalTreeMaker/test/condor
+cd /afs/cern.ch/work/d/deguio/HGCAL/DigiStudies/CMSSW_11_0_0_pre2_occStudies/src/HGCalAnalysis/HGCalTreeMaker/test/condor
 eval `scramv1 runtime -sh`
 cd ${WORKDIR}
 

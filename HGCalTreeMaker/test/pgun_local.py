@@ -1,9 +1,11 @@
-#python -i mugun_HEback.py noiseScenario=0 algo=1 scaleByArea=false
+#python -i mugun_HEback.py noiseScenario=0 algo=1 scaleByArea=false pileup=0
+#cmsRun mugun_HEback.py noiseScenario=3000 algo=2 scaleByArea=true pileup=200 maxEvents=5
 
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 import random
 import os
+import math
 
 from Configuration.StandardSequences.Eras import eras
 
@@ -48,13 +50,19 @@ options.register('pileup',
                  VarParsing.VarParsing.varType.int,
                  "pileup")
 
+options.register('momentum',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 "momentum")
+
 
 options.parseArguments()
 
-print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "pileup=", options.pileup, "maxEvents=", options.maxEvents
+print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "pileup=", options.pileup, "momentum=", options.momentum, "maxEvents=", options.maxEvents
 
 if options.inputFile != '':
-    procName  = "DIGI"
+    procName  = "DIGI3"
     sourceTag = "PoolSource"
     infile    = [options.inputFile]
     maxEvents = -1
@@ -71,8 +79,6 @@ process = cms.Process(procName,eras.Phase2C8)
 process.load("Configuration.StandardSequences.SimulationRandomNumberGeneratorSeeds_cff")
 process.load("Configuration.StandardSequences.Simulation_cff")
 
-process.load('RecoLocalCalo.Configuration.RecoLocalCalo_Cosmics_cff')
-
 if options.pileup==0:
     process.load("SimGeneral.MixingModule.mixNoPU_cfi")
 else:
@@ -81,6 +87,8 @@ else:
     process.mix.bunchspace = cms.int32(25)
     process.mix.minBunch = cms.int32(-2)
     process.mix.maxBunch = cms.int32(2)
+#    process.mix.minBunch = cms.int32(0)
+#    process.mix.maxBunch = cms.int32(0)
 
     if options.noiseScenario != 0:
         pulibrary += 'endOfLife'
@@ -97,6 +105,9 @@ process.load('Configuration/StandardSequences/RawToDigi_cff')
 process.load('Configuration.StandardSequences.RecoSim_cff')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
+
+process.load('RecoLocalCalo.HGCalRecProducers.HGCalUncalibRecHit_cfi')
+process.load('RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi')
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -122,20 +133,58 @@ if options.inputFile != '':
 #-----------
 # GEN setup
 #-----------
-process.generator = cms.EDProducer("FlatRandomEGunProducer",
+def etaToR(eta, Z):
+    return Z*math.tan(2*math.atan(pow(math.e, -1*eta)))
+
+particle=13
+eMin=options.momentum
+eMax=options.momentum
+etaMin=1.52
+etaMax=2.82
+zMin=410.1
+zMax=410.1
+rMin=etaToR(etaMin, zMin)
+rMax=etaToR(etaMax, zMax)
+
+process.generator = cms.EDProducer("CloseByParticleGunProducer",
     PGunParameters = cms.PSet(
-        # you can request more than 1 particle
-        PartID = cms.vint32(13),         # 211: pion, 11: electron
-        MinEta = cms.double(1.30),
-        MaxEta = cms.double(2.82),
-        MinPhi = cms.double(-3.14159265359),         # 3.14159265359
+        PartID = cms.vint32(particle),
+        EnMin = cms.double(eMin),
+        EnMax = cms.double(eMax),
+        RMin = cms.double(rMin),
+        RMax = cms.double(rMax),
+        ZMin = cms.double(zMin),
+        ZMax = cms.double(zMax),
+        Delta = cms.double(2.5),
+        Pointing = cms.bool(False),
+        Overlapping = cms.bool(False),
+        RandomShoot = cms.bool(False),
+        NParticles = cms.int32(2000),
+        MaxEta = cms.double(etaMin),
+        MinEta = cms.double(etaMax),
         MaxPhi = cms.double(3.14159265359),
-        MinE   = cms.double(150.0),
-        MaxE   = cms.double(150.0)
+        MinPhi = cms.double(-3.14159265359),
     ),
-    firstRun = cms.untracked.uint32(1),
-    AddAntiParticle = cms.bool(False)
+    Verbosity = cms.untracked.int32(0),
+    psethack = cms.string('single particle random energy'),
+    AddAntiParticle = cms.bool(False),
+    firstRun = cms.untracked.uint32(1)
 )
+
+##process.generator = cms.EDProducer("FlatRandomEGunProducer",
+##    PGunParameters = cms.PSet(
+##        # you can request more than 1 particle
+##        PartID = cms.vint32(13),         # 211: pion, 11: electron, 13: muon
+##        MinEta = cms.double(1.30),
+##        MaxEta = cms.double(2.82),
+##        MinPhi = cms.double(-3.14159265359),         # 3.14159265359
+##        MaxPhi = cms.double(3.14159265359),
+##        MinE   = cms.double(options.momentum),
+##        MaxE   = cms.double(options.momentum)
+##    ),
+##    firstRun = cms.untracked.uint32(1),
+##    AddAntiParticle = cms.bool(False)
+##)
 
 ###--- NB: vertex spacial displacement in cm
 ###--- specifically for the center of ieta=33, iphi=3
@@ -169,15 +218,17 @@ process.generatorSmeared = cms.EDProducer("GeneratorSmearedProducer")
 process.g4SimHits.Generator.HepMCProductLabel = cms.InputTag('VtxSmeared')
 
 
+#-----------
+# DIGI setup
+#-----------
 #--- CUSTOMIZATION scenario
-from SLHCUpgradeSimulations.Configuration.aging import customise_aging_3000
+from SLHCUpgradeSimulations.Configuration.aging import customise_aging_3000, agedHGCal
 if options.noiseScenario == 3000:
-    process = customise_aging_3000(process)
+    process = agedHGCal(process)
 
 
 process.mix.digitizers.hgchebackDigitizer.digiCfg.algo = cms.uint32(options.algo)
-process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByTileArea = cms.bool(options.scaleByArea)
-process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleBySipmArea = cms.bool(options.scaleByArea)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByArea = cms.bool(options.scaleByArea)
 
 
 #process.HGCAL_noise_MIP = cms.PSet(
@@ -198,8 +249,9 @@ process.load("HGCalAnalysis.HGCalTreeMaker.HGCalTupleMaker_HGCSimHits_cfi")
 process.load("HGCalAnalysis.HGCalTreeMaker.HGCalTupleMaker_SimTracks_cfi")
 process.load("HGCalAnalysis.HGCalTreeMaker.HGCalTupleMaker_RecoTracks_cfi")
 
+outName="muGun_NTU_p"+str(options.momentum)+".root"
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("muGun_NTU.root")
+                                   fileName = cms.string(outName)
 )
 
 #--------
@@ -207,12 +259,11 @@ process.TFileService = cms.Service("TFileService",
 #--------
 process.FEVToutput = cms.OutputModule("PoolOutputModule",
     dataset = cms.untracked.PSet(
-        dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW'),
+        dataTier = cms.untracked.string('FEVT'),
         filterName = cms.untracked.string('')
     ),
     fileName = cms.untracked.string(
-        #'file:/eos/cms/store/group/dpg_hcal/comm_hcal/deguio/HGCal/DigiStudies/ana_h2_muGun_processing_GEN-SIM-DIGI-RAW.root'
-        'file:muGun_GEN-SIM-DIGI-RAW.root'
+        'file:muGun_FEVT.root'
         ),
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
@@ -226,6 +277,7 @@ process.ntu = cms.Sequence(
     process.hgcalTupleGenParticles*
     process.hgcalTupleHGCSimHits*
     process.hgcalTupleHGCDigis*
+    process.hgcalTupleHGCRecHits*
     process.hgcalTupleTree
 )
 
@@ -233,6 +285,13 @@ process.ntu_path = cms.Path(
     process.ntu
 )
 
+process.HGCalUncalibRecHit.HGCEEdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','EE')
+process.HGCalUncalibRecHit.HGCHEFdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','HEfront')
+process.HGCalUncalibRecHit.HGCHEBdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','HEback')
+process.reco_path = cms.Path(
+    process.HGCalUncalibRecHit*
+    process.HGCalRecHit
+)
 
 process.gen_path = cms.Path(
  process.mix *
@@ -242,18 +301,21 @@ process.gen_path = cms.Path(
 if procName == 'GEN':
     process.gen_path.insert(0,process.generator * process.VtxSmeared * process.generatorSmeared * process.genParticles * process.g4SimHits)
 
+process.outpath = cms.EndPath(process.FEVToutput)
+
 
 #schedule
 process.schedule = cms.Schedule(
     process.gen_path,
+    process.reco_path,
+    #process.outpath,
     process.ntu_path
 )
 
 
-#process.outpath = cms.EndPath(process.FEVToutput)
 
-#process.options = cms.untracked.PSet(numberOfThreads = cms.untracked.uint32(4),
-#                                     numberOfStreams = cms.untracked.uint32(0))
+process.options = cms.untracked.PSet(numberOfThreads = cms.untracked.uint32(1),
+                                     numberOfStreams = cms.untracked.uint32(0))
 
 
 #random seed generation

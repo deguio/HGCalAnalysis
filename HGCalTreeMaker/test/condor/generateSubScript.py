@@ -13,7 +13,7 @@ ALGO          = [2]
 SCALEBYAREA   = [True]
 
 #JOB PARAMS
-NJOBS       = 10  #number of jobs per configuration
+NJOBS       = 100  #number of jobs per configuration
 UNITSPERJOB = 10
 EXEC        = 'runProduction.sh'
 FOLDERNAME  = 'gen_mu150'
