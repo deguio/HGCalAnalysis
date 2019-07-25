@@ -104,7 +104,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
 #process.load("Configuration.StandardSequences.GeometryDB_cff")
-process.load('Configuration.Geometry.GeometryExtended2023D41Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D41Reco_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.g4SimHits.UseMagneticField = False #no mag field
 
