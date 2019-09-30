@@ -4,6 +4,7 @@ import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 import random
 import os
+import glob
 
 from Configuration.StandardSequences.Eras import eras
 
@@ -13,7 +14,7 @@ from Configuration.StandardSequences.Eras import eras
 sourceTag = "EmptySource"
 procName  = "GEN"
 infile    = []
-pulibrary = '/eos/cms/store/group/dpg_hgcal/comm_hgcal/deguio/pu_library/'
+pulibrary = '/eos/cms/store/group/dpg_hgcal/comm_hgcal/deguio/pu_library/V11/'
 maxEvents = 5
 
 
@@ -23,6 +24,12 @@ options.register('inputFile',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "input file")
+
+options.register('nametag',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "nametag")
 
 options.register('noiseScenario',
                  '',
@@ -56,7 +63,10 @@ print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, 
 if options.inputFile != '':
     procName  = "DIGI"
     sourceTag = "PoolSource"
-    infile    = [options.inputFile]
+    infiletmp  = [f for f in glob.glob(options.inputFile + "/*.root")]
+    for f in infiletmp:
+        infile.append('file:'+f)
+
     maxEvents = -1
 
 if options.maxEvents:
@@ -199,7 +209,7 @@ process.load("HGCalAnalysis.HGCalTreeMaker.HGCalTupleMaker_SimTracks_cfi")
 process.load("HGCalAnalysis.HGCalTreeMaker.HGCalTupleMaker_RecoTracks_cfi")
 
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("muGun_NTU.root")
+                                   fileName = cms.string("/tmp/deguio/pGun_NTU_"+options.nametag+".root")
 )
 
 #--------
@@ -245,15 +255,15 @@ if procName == 'GEN':
 
 #schedule
 process.schedule = cms.Schedule(
-    process.gen_path,
+    #process.gen_path,
     process.ntu_path
 )
 
 
 #process.outpath = cms.EndPath(process.FEVToutput)
 
-#process.options = cms.untracked.PSet(numberOfThreads = cms.untracked.uint32(4),
-#                                     numberOfStreams = cms.untracked.uint32(0))
+process.options = cms.untracked.PSet(numberOfThreads = cms.untracked.uint32(4),
+                                     numberOfStreams = cms.untracked.uint32(0))
 
 
 #random seed generation

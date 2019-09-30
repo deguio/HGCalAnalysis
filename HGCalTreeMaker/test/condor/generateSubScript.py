@@ -54,4 +54,3 @@ with open(workingDir+"/condor.sub", "w") as fo:
         fo.write("arguments = "+pars+"\n")
         fo.write("queue "+str(NJOBS)+"\n")
         fo.write("\n")
-
