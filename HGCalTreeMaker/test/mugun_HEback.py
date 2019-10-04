@@ -1,3 +1,4 @@
+# run: cmsRun mugun_HEback.py noiseScenario=3000 algo=2 scaleByArea=True pileup=0 maxEvents=100 outputDir=./ nametag=nugun
 #python -i mugun_HEback.py noiseScenario=0 algo=1 scaleByArea=false
 
 import FWCore.ParameterSet.Config as cms
@@ -24,6 +25,12 @@ options.register('inputFile',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "input file")
+
+options.register('outputDir',
+                 './',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "directory where file will be written")
 
 options.register('nametag',
                  '',
@@ -58,7 +65,7 @@ options.register('pileup',
 
 options.parseArguments()
 
-print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "pileup=", options.pileup, "maxEvents=", options.maxEvents
+print "InputFile=", options.inputFile, "outputDir=", options.outputDir, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "pileup=", options.pileup, "maxEvents=", options.maxEvents
 
 if options.inputFile != '':
     procName  = "DIGI"
@@ -114,7 +121,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
 #process.load("Configuration.StandardSequences.GeometryDB_cff")
-process.load('Configuration.Geometry.GeometryExtended2026D41Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D46Reco_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.g4SimHits.UseMagneticField = False #no mag field
 
@@ -209,7 +216,7 @@ process.load("HGCalAnalysis.HGCalTreeMaker.HGCalTupleMaker_SimTracks_cfi")
 process.load("HGCalAnalysis.HGCalTreeMaker.HGCalTupleMaker_RecoTracks_cfi")
 
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("/tmp/deguio/pGun_NTU_"+options.nametag+".root")
+                                   fileName = cms.string(options.outputDir+"/"+options.nametag+".root")
 )
 
 #--------
@@ -233,8 +240,8 @@ process.FEVToutput = cms.OutputModule("PoolOutputModule",
 #---------------------
 process.ntu = cms.Sequence(
     process.hgcalTupleEvent*
-    process.hgcalTupleGenParticles*
-    process.hgcalTupleHGCSimHits*
+    # process.hgcalTupleGenParticles*
+    # process.hgcalTupleHGCSimHits*
     process.hgcalTupleHGCDigis*
     process.hgcalTupleTree
 )
@@ -255,7 +262,7 @@ if procName == 'GEN':
 
 #schedule
 process.schedule = cms.Schedule(
-    #process.gen_path,
+    process.gen_path,
     process.ntu_path
 )
 
