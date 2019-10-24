@@ -79,6 +79,7 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
     std::map<int,int> m_iphi;
     std::map<int,int> m_layer;
     std::map<int,int> m_index;
+    std::map<int,int> m_type;
 
 
     //-----------------------------------------------------
@@ -314,6 +315,7 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
 	    m_iphi[id_] = iphi;
 	    m_layer[id_] = layer;
 	    m_index[id_] = index;
+	    m_type[id_] = type;
 	  }
 	else
 	  {
@@ -401,6 +403,7 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
 	v_int_iphi   -> push_back(m_iphi[itr->first]);
 	v_int_layer  -> push_back(m_layer[itr->first]);
 	v_int_index  -> push_back(m_index[itr->first]);
+	v_int_type   -> push_back(m_type[itr->first]);
       }
 
     //-----------------------------------------------------
@@ -425,6 +428,7 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
     produces<std::vector<int> > ( m_prefix + "IntIPhi" + m_suffix );
     produces<std::vector<int> > ( m_prefix + "IntLayer" + m_suffix );
     produces<std::vector<int> > ( m_prefix + "IntIndex" + m_suffix );
+    produces<std::vector<int> > ( m_prefix + "IntType" + m_suffix );
 
     produces<std::vector<float> > ( m_prefix + "Energy" + m_suffix );
     produces<std::vector<float> > ( m_prefix + "Time"   + m_suffix );
@@ -451,6 +455,7 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
   std::unique_ptr<std::vector<int> > v_int_iphi;
   std::unique_ptr<std::vector<int> > v_int_layer;
   std::unique_ptr<std::vector<int> > v_int_index;
+  std::unique_ptr<std::vector<int> > v_int_type;
 
   std::unique_ptr<std::vector<float> > v_energy;
   std::unique_ptr<std::vector<float> > v_time;
@@ -545,6 +550,7 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
     v_int_iphi   = std::unique_ptr<std::vector<int> > ( new std::vector<int> ());
     v_int_layer  = std::unique_ptr<std::vector<int> > ( new std::vector<int> ());
     v_int_index  = std::unique_ptr<std::vector<int> > ( new std::vector<int> ());
+    v_int_type   = std::unique_ptr<std::vector<int> > ( new std::vector<int> ());
 
     v_energy = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
     v_time   = std::unique_ptr<std::vector<float> > ( new std::vector<float> ());
@@ -573,6 +579,7 @@ class HGCalTupleMaker_HGCSimHits : public edm::EDProducer {
     iEvent.put( move(v_int_iphi   ), m_prefix + "IntIPhi"   + m_suffix );
     iEvent.put( move(v_int_layer  ), m_prefix + "IntLayer"  + m_suffix );
     iEvent.put( move(v_int_index  ), m_prefix + "IntIndex"  + m_suffix );
+    iEvent.put( move(v_int_type   ), m_prefix + "IntType"   + m_suffix );
 
     iEvent.put( move(v_energy ), m_prefix + "Energy" + m_suffix );
     iEvent.put( move(v_time   ), m_prefix + "Time"   + m_suffix );

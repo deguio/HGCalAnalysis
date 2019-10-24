@@ -7,16 +7,18 @@ import datetime
 import time
 
 #POSSIBLE CONFIGURATIONS
-NOISESCENARIO = [0, 3000]
-PILEUP        = [0, 200]
+NOISESCENARIO = [0]
+PILEUP        = [0]
 ALGO          = [2]
 SCALEBYAREA   = [True]
+MOMENTUM      = [0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.23, 0.26, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+#1.2, 1.4, 1.6, 1.8, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0, 40.0, 60.0, 80.0, 100.0, 150.0, 200.0]
 
 #JOB PARAMS
 NJOBS       = 100  #number of jobs per configuration
-UNITSPERJOB = 10
+UNITSPERJOB = 100
 EXEC        = 'runProduction.sh'
-FOLDERNAME  = 'gen_mu150'
+FOLDERNAME  = 'gen_mu_pscan'
 
 
 pwd = os.environ['PWD']
@@ -32,10 +34,11 @@ for noise in NOISESCENARIO:
     for pu in PILEUP:
         for al in ALGO:
             for scA in SCALEBYAREA:
-                requestName = FOLDERNAME+"_$(ProcId)_noiseScenario_"+str(noise)+"_pileup_"+str(pu)+"_algo_"+str(al)+"_scaleArea_"+str(scA)
-                requestNameList.append(requestName)
-                cfgParams = '$(ProcId) noiseScenario='+str(noise)+' algo='+str(al)+' pileup='+str(pu)+' scaleByArea='+str(scA)+' maxEvents='+str(UNITSPERJOB)
-                pyCfgParamsList.append(cfgParams)
+                for pp in MOMENTUM:
+                    requestName = FOLDERNAME+"_$(ProcId)_noiseScenario_"+str(noise)+"_pileup_"+str(pu)+"_algo_"+str(al)+"_scaleArea_"+str(scA)+"_p_"+str(pp)
+                    requestNameList.append(requestName)
+                    cfgParams = '$(ProcId) noiseScenario='+str(noise)+' algo='+str(al)+' pileup='+str(pu)+' scaleByArea='+str(scA)+' maxEvents='+str(UNITSPERJOB)+' momentum='+str(pp)
+                    pyCfgParamsList.append(cfgParams)
 
 
 #prepare condor sub fileName

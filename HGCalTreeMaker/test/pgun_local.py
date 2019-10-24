@@ -62,7 +62,7 @@ options.parseArguments()
 print "InputFile=", options.inputFile, "noiseScenario=", options.noiseScenario, "/fb  algo=", options.algo, "scaleByArea=", options.scaleByArea, "pileup=", options.pileup, "momentum=", options.momentum, "maxEvents=", options.maxEvents
 
 if options.inputFile != '':
-    procName  = "DIGI3"
+    procName  = "DIGI"
     sourceTag = "PoolSource"
     infile    = [options.inputFile]
     maxEvents = -1
@@ -99,27 +99,29 @@ else:
     process.mix.input.fileNames = cms.untracked.vstring(mixFiles)
 
 
-process.load('Configuration.StandardSequences.Digi_cff')
-process.load('Configuration/StandardSequences/DigiToRaw_cff')
-process.load('Configuration/StandardSequences/RawToDigi_cff')
-process.load('Configuration.StandardSequences.RecoSim_cff')
+#process.load('Configuration.StandardSequences.Digi_cff')
+#process.load('Configuration/StandardSequences/DigiToRaw_cff')
+#process.load('Configuration/StandardSequences/RawToDigi_cff')
+#process.load('Configuration.StandardSequences.RecoSim_cff')
+process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 
-process.load('RecoLocalCalo.HGCalRecProducers.HGCalUncalibRecHit_cfi')
-process.load('RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi')
+#process.load('RecoLocalCalo.HGCalRecProducers.HGCalUncalibRecHit_cfi')
+#process.load('RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi')
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
-process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
+#process.load("IOMC.EventVertexGenerators.VtxSmearedGauss_cfi")
+process.load('Configuration.StandardSequences.VtxSmearedNoSmear_cff')
 #process.load("Configuration.StandardSequences.GeometryDB_cff")
-process.load('Configuration.Geometry.GeometryExtended2023D41Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D46Reco_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.g4SimHits.UseMagneticField = False #no mag field
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 50
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(maxEvents)
@@ -141,8 +143,8 @@ eMin=options.momentum
 eMax=options.momentum
 etaMin=1.52
 etaMax=2.82
-zMin=410.1
-zMax=410.1
+zMin=320
+zMax=320
 rMin=etaToR(etaMin, zMin)
 rMax=etaToR(etaMax, zMax)
 
@@ -159,9 +161,9 @@ process.generator = cms.EDProducer("CloseByParticleGunProducer",
         Pointing = cms.bool(False),
         Overlapping = cms.bool(False),
         RandomShoot = cms.bool(False),
-        NParticles = cms.int32(2000),
-        MaxEta = cms.double(etaMin),
-        MinEta = cms.double(etaMax),
+        NParticles = cms.int32(1),
+        MaxEta = cms.double(etaMax),
+        MinEta = cms.double(etaMin),
         MaxPhi = cms.double(3.14159265359),
         MinPhi = cms.double(-3.14159265359),
     ),
@@ -193,13 +195,13 @@ process.generator = cms.EDProducer("CloseByParticleGunProducer",
 #process.VtxSmeared.MeanY = 16.3       #                             *sin (0.261799)
 #process.VtxSmeared.MeanZ = 1100.0     # 1115 cm - HF surface
 
-process.VtxSmeared.SigmaX = 0.00001   # further reduce vertex smearing
-process.VtxSmeared.SigmaY = 0.00001
-process.VtxSmeared.SigmaZ = 0.00001
+#process.VtxSmeared.SigmaX = 0.00001   # further reduce vertex smearing
+#process.VtxSmeared.SigmaY = 0.00001
+#process.VtxSmeared.SigmaZ = 0.00001
 
 #--- CUSTOMIZATION: releasing g4Sim constraints (PR #25251)
-process.g4SimHits.Generator.ApplyPCuts = cms.bool(False)
-process.g4SimHits.Generator.ApplyEtaCuts = cms.bool(False)
+#process.g4SimHits.Generator.ApplyPCuts = cms.bool(False)
+#process.g4SimHits.Generator.ApplyEtaCuts = cms.bool(False)
 
 #--- CUSTOMIZATION mixing module
 # (-37 ns wrt regular pp interaction point)
@@ -213,7 +215,7 @@ process.g4SimHits.Generator.ApplyEtaCuts = cms.bool(False)
 #                                      )
 
 #--- CUSTOMIZATION of vertex smearing
-process.VtxSmeared.src = cms.InputTag("generator", "unsmeared")
+#process.VtxSmeared.src = cms.InputTag("generator", "unsmeared")
 process.generatorSmeared = cms.EDProducer("GeneratorSmearedProducer")
 process.g4SimHits.Generator.HepMCProductLabel = cms.InputTag('VtxSmeared')
 
@@ -228,7 +230,8 @@ if options.noiseScenario == 3000:
 
 
 process.mix.digitizers.hgchebackDigitizer.digiCfg.algo = cms.uint32(options.algo)
-process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByArea = cms.bool(options.scaleByArea)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByTileArea = cms.bool(options.scaleByArea)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleBySipmArea = cms.bool(options.scaleByArea)
 
 
 #process.HGCAL_noise_MIP = cms.PSet(
@@ -276,8 +279,8 @@ process.ntu = cms.Sequence(
     process.hgcalTupleEvent*
     process.hgcalTupleGenParticles*
     process.hgcalTupleHGCSimHits*
-    process.hgcalTupleHGCDigis*
-    process.hgcalTupleHGCRecHits*
+    #process.hgcalTupleHGCDigis*
+    #process.hgcalTupleHGCRecHits*
     process.hgcalTupleTree
 )
 
@@ -285,18 +288,18 @@ process.ntu_path = cms.Path(
     process.ntu
 )
 
-process.HGCalUncalibRecHit.HGCEEdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','EE')
-process.HGCalUncalibRecHit.HGCHEFdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','HEfront')
-process.HGCalUncalibRecHit.HGCHEBdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','HEback')
-process.reco_path = cms.Path(
-    process.HGCalUncalibRecHit*
-    process.HGCalRecHit
-)
+#process.HGCalUncalibRecHit.HGCEEdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','EE')
+#process.HGCalUncalibRecHit.HGCHEFdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','HEfront')
+#process.HGCalUncalibRecHit.HGCHEBdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis','HEback')
+#process.reco_path = cms.Path(
+#    process.HGCalUncalibRecHit*
+#    process.HGCalRecHit
+#)
 
 process.gen_path = cms.Path(
- process.mix *
- process.addPileupInfo *
- process.rawDataCollector
+ #process.mix *
+ #process.addPileupInfo *
+ #process.rawDataCollector
 )
 if procName == 'GEN':
     process.gen_path.insert(0,process.generator * process.VtxSmeared * process.generatorSmeared * process.genParticles * process.g4SimHits)
@@ -307,15 +310,15 @@ process.outpath = cms.EndPath(process.FEVToutput)
 #schedule
 process.schedule = cms.Schedule(
     process.gen_path,
-    process.reco_path,
+    #process.reco_path,
     #process.outpath,
     process.ntu_path
 )
 
 
 
-process.options = cms.untracked.PSet(numberOfThreads = cms.untracked.uint32(1),
-                                     numberOfStreams = cms.untracked.uint32(0))
+#process.options = cms.untracked.PSet(numberOfThreads = cms.untracked.uint32(1),
+#                                     numberOfStreams = cms.untracked.uint32(0))
 
 
 #random seed generation
